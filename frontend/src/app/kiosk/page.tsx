@@ -42,7 +42,7 @@ export default function KioskPage() {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/v1/students');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/students`);
         if (!response.ok) return;
         const students = await response.json();
         
@@ -115,7 +115,7 @@ export default function KioskPage() {
           const photoUrl = webcamRef.current?.getScreenshot() || null;
 
           // Trigger backend notification Fire-and-Forget style for real-time speed
-          fetch('http://localhost:5000/api/iot/face-scan', {
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/iot/face-scan`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 

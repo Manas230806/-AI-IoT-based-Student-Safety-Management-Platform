@@ -50,7 +50,7 @@ export default function AdminAttendancePage() {
 
     const fetchAttendance = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/v1/attendance/school/${schoolId}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/attendance/school/${schoolId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch school attendance records');
         }

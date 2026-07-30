@@ -38,7 +38,7 @@ export default function ParentProfilePage() {
       
       try {
         const storedUser = JSON.parse(storedUserStr);
-        const res = await fetch(`http://localhost:5000/api/v1/parents/${storedUser.id}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/parents/${storedUser.id}`);
         if (res.ok) {
           const data = await res.json();
           setProfile(data);

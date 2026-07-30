@@ -27,7 +27,7 @@ export default function ParentDashboard() {
   const fetchAttendance = useCallback(async () => {
     if (!userId) return;
     try {
-      const response = await fetch(`http://localhost:5000/api/v1/attendance/parent/${userId}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/attendance/parent/${userId}`);
       if (response.ok) {
         const data = await response.json();
         setRecentEvents(data.slice(0, 3)); // Only show top 3 on dashboard
@@ -41,7 +41,7 @@ export default function ParentDashboard() {
     if (userId) {
       fetchAttendance();
 
-      const socket = io("http://localhost:5000");
+      const socket = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000");
       socket.on("attendanceUpdate", (newRecord) => {
         console.log("Dashboard real-time update received!", newRecord);
         fetchAttendance();

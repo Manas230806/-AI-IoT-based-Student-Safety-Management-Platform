@@ -47,7 +47,7 @@ export default function ParentAttendancePage() {
   const fetchAttendance = useCallback(async () => {
     if (!userId) return;
     try {
-      const response = await fetch(`http://localhost:5000/api/v1/attendance/parent/${userId}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/attendance/parent/${userId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch attendance records');
       }
@@ -64,7 +64,7 @@ export default function ParentAttendancePage() {
     if (userId) {
       fetchAttendance();
       
-      const socket = io("http://localhost:5000");
+      const socket = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000");
       socket.on("attendanceUpdate", (newRecord) => {
         console.log("Real-time update received!", newRecord);
         fetchAttendance();

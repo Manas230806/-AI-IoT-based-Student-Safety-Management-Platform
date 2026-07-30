@@ -22,7 +22,7 @@ export default function AdminDashboard() {
 
     const fetchAttendance = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/v1/attendance/school/${schoolId}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/attendance/school/${schoolId}`);
         if (response.ok) {
           const data = await response.json();
           // The data is ordered by name then time, we should probably just grab latest for feed.

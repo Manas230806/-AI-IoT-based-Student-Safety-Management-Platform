@@ -27,7 +27,7 @@ export default function AdminStudentsPage() {
 
   const fetchStudentsList = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/v1/students');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/students`);
       if (response.ok) {
         const data = await response.json();
         setStudentsList(data);
@@ -49,7 +49,7 @@ export default function AdminStudentsPage() {
 
   const handleSaveEdit = async (studentId: string) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/v1/students/${studentId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/students/${studentId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editForm)
@@ -68,7 +68,7 @@ export default function AdminStudentsPage() {
   const handleDelete = async (studentId: string, name: string) => {
     if (!window.confirm(`Are you sure you want to delete ${name}? This cannot be undone.`)) return;
     try {
-      const response = await fetch(`http://localhost:5000/api/v1/students/${studentId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/students/${studentId}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -136,7 +136,7 @@ export default function AdminStudentsPage() {
         }
       }
 
-      const response = await fetch('http://localhost:5000/api/v1/students', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/students`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
