@@ -67,14 +67,14 @@ export const createStudent = async (req: Request, res: Response) => {
     const plainPassword = `${firstName}@${rollNumber}`;
     const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
-    // 3. Database Transaction
-    const result = await prisma.$transaction(async (tx) => {
+    // 3. Sequential Database Creation (Avoid PgBouncer Transaction Issues)
+    try {
       // Check if parent user already exists
-      let user = await tx.user.findUnique({ where: { email: parentEmail } });
+      let user = await prisma.user.findUnique({ where: { email: parentEmail } });
       let parentProfile;
 
       if (!user) {
-        user = await tx.user.create({
+        user = await prisma.user.create({
           data: {
             email: parentEmail,
             password: hashedPassword,
@@ -85,21 +85,21 @@ export const createStudent = async (req: Request, res: Response) => {
           }
         });
 
-        parentProfile = await tx.parent.create({
+        parentProfile = await prisma.parent.create({
           data: {
             userId: user.id,
             phoneNumber: '0000000000' // Placeholder
           }
         });
       } else {
-        parentProfile = await tx.parent.findUnique({ where: { userId: user.id } });
+        parentProfile = await prisma.parent.findUnique({ where: { userId: user.id } });
         if (!parentProfile) {
-           parentProfile = await tx.parent.create({ data: { userId: user.id, phoneNumber: '0000000000' }});
+           parentProfile = await prisma.parent.create({ data: { userId: user.id, phoneNumber: '0000000000' }});
         }
       }
 
       // Create Student
-      const student = await tx.student.create({
+      const student = await prisma.student.create({
         data: {
           firstName,
           lastName,
@@ -113,21 +113,22 @@ export const createStudent = async (req: Request, res: Response) => {
       });
 
       // Link Parent and Student
-      await tx.parentStudent.create({
+      await prisma.parentStudent.create({
         data: {
           parentId: parentProfile.id,
           studentId: student.id
         }
       });
 
-      return { student, generatedPassword: plainPassword };
-    });
-
-    res.status(201).json({
-      message: 'Student and Parent registered successfully',
-      student: result.student,
-      parentPassword: result.generatedPassword
-    });
+      res.status(201).json({
+        message: 'Student and Parent registered successfully',
+        student: student,
+        parentPassword: plainPassword
+      });
+    } catch (dbError: any) {
+      console.error('Database Operation Error:', dbError);
+      res.status(500).json({ error: 'Failed to create records', details: dbError.message || String(dbError) });
+    }
   } catch (error: any) {
     console.error('Registration Error:', error);
     res.status(500).json({ error: 'Failed to create student and parent account', details: error.message || String(error) });
@@ -139,9 +140,9 @@ export const updateStudent = async (req: Request, res: Response) => {
     const { id } = req.params as { id: string };
     const { firstName, lastName, class: studentClass, parentEmail } = req.body;
     
-    await prisma.$transaction(async (tx) => {
+    try {
       // 1. Update Student
-      const student = await tx.student.update({
+      const student = await prisma.student.update({
         where: { id },
         data: { 
           ...(firstName && { firstName }),
@@ -156,18 +157,21 @@ export const updateStudent = async (req: Request, res: Response) => {
         const parentUserId = student.parents[0]?.parent?.userId;
         if (parentUserId) {
           // Check if this email is already taken by a DIFFERENT user
-          const existingUser = await tx.user.findUnique({ where: { email: parentEmail } });
+          const existingUser = await prisma.user.findUnique({ where: { email: parentEmail } });
           if (existingUser && existingUser.id !== parentUserId) {
             throw new Error(`The email ${parentEmail} is already registered to another parent account.`);
           }
           
-          await tx.user.update({
+          await prisma.user.update({
             where: { id: parentUserId },
             data: { email: parentEmail }
           });
         }
       }
-    });
+    } catch (err: any) {
+      console.error("Update Transaction Error:", err);
+      return res.status(500).json({ error: 'Failed to update student', details: err.message });
+    }
 
     res.json({ message: 'Student updated successfully' });
   } catch (error: any) {
@@ -180,16 +184,19 @@ export const deleteStudent = async (req: Request, res: Response) => {
   try {
     const { id } = req.params as { id: string };
     
-    await prisma.$transaction(async (tx) => {
+    try {
       // Delete relationships first to avoid foreign key constraints
-      await tx.parentStudent.deleteMany({ where: { studentId: id } });
-      await tx.guardianStudent.deleteMany({ where: { studentId: id } });
-      await tx.attendanceRecord.deleteMany({ where: { studentId: id } });
-      await tx.faceVerificationLog.deleteMany({ where: { studentId: id } });
+      await prisma.parentStudent.deleteMany({ where: { studentId: id } });
+      await prisma.guardianStudent.deleteMany({ where: { studentId: id } });
+      await prisma.attendanceRecord.deleteMany({ where: { studentId: id } });
+      await prisma.faceVerificationLog.deleteMany({ where: { studentId: id } });
       
       // Finally delete student
-      await tx.student.delete({ where: { id } });
-    });
+      await prisma.student.delete({ where: { id } });
+    } catch (err: any) {
+      console.error("Delete DB Error:", err);
+      return res.status(500).json({ error: 'Failed to delete student from DB', details: err.message });
+    }
     
     res.json({ message: 'Student deleted successfully' });
   } catch (error: any) {
