@@ -7,7 +7,7 @@ export const getParentProfile = async (req: Request, res: Response) => {
 
     // Find the parent profile, their User record, and their linked students
     const parentProfile = await prisma.parent.findUnique({
-      where: { userId },
+      where: { userId: userId as string },
       include: { 
         user: {
           select: {
