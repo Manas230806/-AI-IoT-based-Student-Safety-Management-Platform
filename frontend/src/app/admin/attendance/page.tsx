@@ -43,19 +43,22 @@ export default function AdminAttendancePage() {
       }
     }
 
-    if (!schoolId) {
-      setLoading(false);
-      return;
-    }
-
     const fetchAttendance = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/attendance/school/${schoolId}`);
+        const url = schoolId 
+          ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/attendance/school/${schoolId}`
+          : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/attendance/school/all`;
+          
+        const response = await fetch(url);
         if (!response.ok) {
           throw new Error('Failed to fetch school attendance records');
         }
         const data = await response.json();
-        setRecords(data);
+        if (Array.isArray(data)) {
+          setRecords(data);
+        } else {
+          setRecords([]);
+        }
       } catch (err) {
         console.error(err);
       } finally {

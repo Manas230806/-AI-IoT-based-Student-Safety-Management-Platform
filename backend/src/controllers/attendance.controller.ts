@@ -55,7 +55,7 @@ export const getSchoolAttendance = async (req: Request, res: Response) => {
     const schoolId = req.params.schoolId as string;
     
     // If the admin doesn't have a school assigned yet, fetch all attendance
-    const whereClause = (!schoolId || schoolId === 'null') 
+    const whereClause = (!schoolId || schoolId === 'null' || schoolId === 'all') 
       ? {} 
       : { student: { schoolId: schoolId } };
 

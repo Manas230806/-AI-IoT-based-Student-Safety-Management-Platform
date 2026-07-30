@@ -111,7 +111,7 @@ router.post('/face-scan', async (req, res) => {
             const actionStatus = activityType === 'BOARDED' ? 'Access Granted & Boarding Confirmed' : 'Drop-off Confirmed';
             
             const info = await transporter.sendMail({
-              from: '"EduGuard Safety System" <alerts@eduguard.com>',
+              from: `"EduGuard Safety System" <${process.env.SMTP_USER}>`,
               to: recipientEmail,
               subject: `✅ EduGuard Safety Alert: ${activityType} Verification`,
               text: `Hello, this is an automated alert from EduGuard Safety. ${name} has successfully ${actionText}.`,
