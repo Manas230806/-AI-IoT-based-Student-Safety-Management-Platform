@@ -19,8 +19,6 @@ export default function AdminDashboard() {
       }
     }
 
-    if (!schoolId) return;
-
     const fetchAttendance = async () => {
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/attendance/school/${schoolId || 'null'}`);
