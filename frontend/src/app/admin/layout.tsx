@@ -30,7 +30,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className="w-64 border-r border-white/10 bg-black/50 hidden md:flex flex-col">
         <div className="h-16 flex items-center px-6 border-b border-white/10">
           <div className="flex items-center gap-2">
-            <Image src="/logo.jpg" alt="Logo" width={28} height={28} className="object-contain" />
+            <Image src="/logo.png" alt="Logo" width={28} height={28} className="object-contain" />
             <span className="font-semibold tracking-tight text-sm">EduGuard School Admin</span>
           </div>
         </div>
@@ -66,7 +66,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Mobile Header */}
         <header className="h-16 md:hidden border-b border-white/10 flex items-center justify-between px-4 sm:px-6 bg-black/80 backdrop-blur sticky top-0 z-40">
           <div className="flex items-center gap-2">
-            <Image src="/logo.jpg" alt="Logo" width={24} height={24} className="object-contain" />
+            <Image src="/logo.png" alt="Logo" width={24} height={24} className="object-contain" />
             <span className="font-semibold tracking-tight text-lg">EduGuard</span>
           </div>
           <button 

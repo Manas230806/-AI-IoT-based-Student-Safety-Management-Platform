@@ -20,7 +20,7 @@ export default function LoadingScreen() {
         {/* Logo Image */}
         <div className="relative w-32 h-32 mb-8">
           <Image 
-            src="/logo.jpg" 
+            src="/logo.png" 
             alt="EduGuard Logo" 
             fill
             className="object-contain drop-shadow-2xl"
