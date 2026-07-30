@@ -1,7 +1,8 @@
 "use client";
 
 import { Users, Bus, AlertTriangle, ShieldCheck, Activity } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { io } from "socket.io-client";
 
 export default function AdminDashboard() {
   const [recentEvents, setRecentEvents] = useState<any[]>([]);
@@ -22,15 +23,11 @@ export default function AdminDashboard() {
 
     const fetchAttendance = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/attendance/school/${schoolId}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/attendance/school/${schoolId || 'null'}`);
         if (response.ok) {
           const data = await response.json();
-          // The data is ordered by name then time, we should probably just grab latest for feed.
-          // Since it's a feed, we want time descending globally. 
-          // Assuming the endpoint returns it ordered by time desc when not grouped, but we grouped by name.
-          // For the feed, let's just sort it by timestamp here to show chronological feed.
           const sorted = [...data].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-          setRecentEvents(sorted.slice(0, 5)); 
+          setRecentEvents(sorted.slice(0, 8)); 
         }
       } catch (err) {
         console.error(err);
@@ -38,8 +35,19 @@ export default function AdminDashboard() {
     };
 
     fetchAttendance();
-    const interval = setInterval(fetchAttendance, 10000);
-    return () => clearInterval(interval);
+
+    // Setup Real-time WebSockets
+    const socket = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000");
+    socket.on("attendanceUpdate", (newRecord) => {
+      console.log("Admin Dashboard received real-time scan!", newRecord);
+      fetchAttendance();
+    });
+
+    const interval = setInterval(fetchAttendance, 15000);
+    return () => {
+      clearInterval(interval);
+      socket.disconnect();
+    };
   }, []);
 
   const kpis = [

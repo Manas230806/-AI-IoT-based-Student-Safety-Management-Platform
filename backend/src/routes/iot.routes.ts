@@ -92,6 +92,7 @@ router.post('/face-scan', async (req, res) => {
             let transporter;
             
             if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+              console.log(`Attempting to send real email to ${recipientEmail} via SMTP...`);
               transporter = nodemailer.createTransport({
                 host: 'smtp.gmail.com',
                 port: 587,
@@ -102,16 +103,8 @@ router.post('/face-scan', async (req, res) => {
                 }
               });
             } else {
-              const testAccount = await nodemailer.createTestAccount();
-              transporter = nodemailer.createTransport({
-                host: "smtp.ethereal.email",
-                port: 587,
-                secure: false,
-                auth: {
-                  user: testAccount.user,
-                  pass: testAccount.pass,
-                },
-              });
+              console.warn("⚠️ SMTP_USER or SMTP_PASS is missing in Environment Variables! Cannot send real emails.");
+              return; // Skip fake ethereal emails
             }
 
             const actionText = activityType === 'BOARDED' ? 'boarded the bus' : 'been dropped off safely';

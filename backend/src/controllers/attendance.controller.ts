@@ -54,13 +54,14 @@ export const getSchoolAttendance = async (req: Request, res: Response) => {
   try {
     const schoolId = req.params.schoolId as string;
     
+    // If the admin doesn't have a school assigned yet, fetch all attendance
+    const whereClause = (!schoolId || schoolId === 'null') 
+      ? {} 
+      : { student: { schoolId: schoolId } };
+
     // We want the daily activity for all students in the school
     const attendance = await prisma.attendanceRecord.findMany({
-      where: { 
-        student: {
-          schoolId: schoolId
-        }
-      },
+      where: whereClause,
       include: {
         student: true,
         bus: true,
