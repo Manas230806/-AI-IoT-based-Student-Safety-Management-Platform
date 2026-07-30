@@ -1,0 +1,232 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// Enums removed for sqlite
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  role      String
+  schoolId  String?
+  school    School?  @relation(fields: [schoolId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  parentProfile   Parent?
+  driverProfile   Driver?
+}
+
+model School {
+  id          String   @id @default(uuid())
+  name        String
+  address     String
+  contactInfo String
+  users       User[]
+  students    Student[]
+  buses       Bus[]
+  routes      Route[]
+  devices     Device[]
+  visitors    VisitorLog[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Student {
+  id             String   @id @default(uuid())
+  rollNumber     String
+  firstName      String
+  lastName       String
+  photoUrl       String?
+  faceEmbedding  String?
+  class          String
+  section        String
+  bloodGroup     String?
+  medicalNotes   String?
+  schoolId       String
+  school         School   @relation(fields: [schoolId], references: [id])
+  assignedBusId  String?
+  assignedBus    Bus?     @relation(fields: [assignedBusId], references: [id])
+  pickupAddress  String?
+  dropAddress    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  parents        ParentStudent[]
+  guardians      GuardianStudent[]
+  attendances    AttendanceRecord[]
+  faceLogs       FaceVerificationLog[]
+}
+
+model Parent {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+  phoneNumber    String
+  secondaryPhone String?
+  
+  students       ParentStudent[]
+}
+
+model ParentStudent {
+  parentId  String
+  studentId String
+  parent    Parent  @relation(fields: [parentId], references: [id])
+  student   Student @relation(fields: [studentId], references: [id])
+
+  @@id([parentId, studentId])
+}
+
+model Guardian {
+  id           String   @id @default(uuid())
+  firstName    String
+  lastName     String
+  relation     String
+  phoneNumber  String
+  photoUrl     String?
+  faceEmbedding String?
+  isApproved   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  students     GuardianStudent[]
+  faceLogs     FaceVerificationLog[]
+}
+
+model GuardianStudent {
+  guardianId String
+  studentId  String
+  guardian   Guardian @relation(fields: [guardianId], references: [id])
+  student    Student  @relation(fields: [studentId], references: [id])
+
+  @@id([guardianId, studentId])
+}
+
+model Driver {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+  licenseNumber String  @unique
+  phoneNumber  String
+  buses        Bus[]
+}
+
+model Bus {
+  id           String   @id @default(uuid())
+  registration String   @unique
+  capacity     Int
+  schoolId     String
+  school       School   @relation(fields: [schoolId], references: [id])
+  driverId     String?
+  driver       Driver?  @relation(fields: [driverId], references: [id])
+  routeId      String?
+  route        Route?   @relation(fields: [routeId], references: [id])
+  
+  students     Student[]
+  gpsLogs      GPSLog[]
+  attendances  AttendanceRecord[]
+  devices      Device[]
+}
+
+model Route {
+  id          String   @id @default(uuid())
+  name        String
+  schoolId    String
+  school      School   @relation(fields: [schoolId], references: [id])
+  buses       Bus[]
+  stops       Stop[]
+}
+
+model Stop {
+  id          String   @id @default(uuid())
+  name        String
+  latitude    Float
+  longitude   Float
+  order       Int
+  routeId     String
+  route       Route    @relation(fields: [routeId], references: [id])
+}
+
+model Device {
+  id           String   @id @default(uuid())
+  macAddress   String   @unique
+  type         String
+  status       String
+  schoolId     String
+  school       School   @relation(fields: [schoolId], references: [id])
+  busId        String?
+  bus          Bus?     @relation(fields: [busId], references: [id])
+  lastPing     DateTime @default(now())
+}
+
+model AttendanceRecord {
+  id          String   @id @default(uuid())
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id])
+  busId       String
+  bus         Bus      @relation(fields: [busId], references: [id])
+  type        String
+  timestamp   DateTime @default(now())
+  verifiedBy  String
+  photoUrl    String?
+}
+
+model FaceVerificationLog {
+  id          String   @id @default(uuid())
+  studentId   String?
+  student     Student? @relation(fields: [studentId], references: [id])
+  guardianId  String?
+  guardian    Guardian? @relation(fields: [guardianId], references: [id])
+  status      String
+  confidence  Float
+  timestamp   DateTime @default(now())
+  imageUrl    String?
+}
+
+model GPSLog {
+  id          String   @id @default(uuid())
+  busId       String
+  bus         Bus      @relation(fields: [busId], references: [id])
+  latitude    Float
+  longitude   Float
+  speed       Float
+  timestamp   DateTime @default(now())
+}
+
+model SOSEvent {
+  id          String   @id @default(uuid())
+  triggeredBy String
+  role        String
+  locationLat Float?
+  locationLng Float?
+  status      String
+  timestamp   DateTime @default(now())
+}
+
+model VisitorLog {
+  id          String   @id @default(uuid())
+  schoolId    String
+  school      School   @relation(fields: [schoolId], references: [id])
+  name        String
+  purpose     String
+  photoUrl    String?
+  checkInTime DateTime @default(now())
+  checkOutTime DateTime?
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  action      String
+  entity      String
+  entityId    String
+  userId      String
+  timestamp   DateTime @default(now())
+  details     String?
+}
