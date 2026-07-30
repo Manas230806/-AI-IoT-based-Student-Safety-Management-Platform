@@ -2,6 +2,7 @@
 
 import { Shield, Home, Users, Bus, Map, Settings, LogOut, Calendar } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -21,7 +22,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className="w-64 border-r border-white/10 bg-black/50 hidden md:flex flex-col">
         <div className="h-16 flex items-center px-6 border-b border-white/10">
           <div className="flex items-center gap-2">
-            <Shield className="w-6 h-6 text-indigo-500" />
+            <Image src="/logo.png" alt="Logo" width={28} height={28} className="object-contain" />
             <span className="font-semibold tracking-tight text-sm">EduGuard School Admin</span>
           </div>
         </div>
